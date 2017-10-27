@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <title>拼图游戏</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+
+<body>
+  <div id="root">
+    <div id="records">记录</div>
+    <div id="container">
+      <div class="step">
+        <div class="step1">
+          <div class="title">请选择一张图片</div>
+          <ul class="imgList">
+            <li class="selected">
+              <img data-tag="default-1" src="./images/Super-Mario-Odyssey.jpg" alt="">
+            </li>
+            <li>
+              <img data-tag="default-2" src="./images/Zelda.jpg" alt="">
+            </li>
+          </ul>
+          <p>或</p>
+          <input id="imgUpload" type="file" name="image" multiple accept="image/png, image/jpeg, image/gif" value="上传一张新图片">
+        </div>
+        <div class="step2">
+          <div class="title">请选择难度</div>
+          <div class="grade">
+            <label for="divideRow">分割比例</label>
+            <div>
+              <input id="divideRow" type="number" step="1" name="divide-row" value="3"> 行 x
+              <input id="divideCol" type="number" step="1" name="divide-col" value="4"> 列
+            </div>
+          </div>
+          <button id="startGame" type="button">开始</button>
+        </div>
+      </div>
+      <div class="countDown">
+        <span>3</span>...
+      </div>
+      <div id="gameWrap">
+
+      </div>
+    </div>
+  </div>
+</body>
+<script src="js/app.js"></script>
+
+</html>
