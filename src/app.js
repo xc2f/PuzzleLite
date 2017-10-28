@@ -173,23 +173,33 @@ function renderPiece(list) {
 }
 
 function renderGrid(i_w, i_h) {
+
   // resize
-  let row_width, li_height
   let puzzle_box = $('#puzzleBox')
   // 求得当前区域可使用的大小
   let max_width = puzzle_box.offsetWidth
   let max_height = puzzle_box.offsetHeight
+  let puzzle_wrap = $('#puzzleBox .puzzleWrap')
   // 如果图片长宽比大于1
   if(i_w >= i_h){
-    // 按长计算铺满整个区域,求得长边分割的每一块宽度
-    li_width = max_width / config.col
-    // 由 (li_width * col) / (li_height * row) === i_w / i_h
-    // li_width * col === max_width
-    li_height = (max_width * i_h) / (i_w * config.row) 
+    let p_w, p_h
+    // 按最长边铺开
+    p_w = max_width
+    // 由 p_w / p_h === i_w / i_h
+    // p_w === max_width
+    p_h = max_width * i_h / i_w
+
+    // 再确保高度不会超出范围,超出则等比例缩小
+    if (p_h > max_height) {
+      p_h = max_height
+      p_w = p_h * i_w / i_h
+    }
+    puzzle_wrap.style.width = p_w + 'px'
+    puzzle_wrap.style.height = p_h + 'px'
   } else {
     // 按图片高度铺满区域计算
-    li_height = max_height / config.row
-    li_width = (max_height * i_w) / (i_h * config.col)
+    puzzle_wrap.style.height = max_height + 'px'
+    puzzle_wrap.style.width = max_height * i_w / i_h + 'px'
   }
 
   // 渲染网格
@@ -198,12 +208,15 @@ function renderGrid(i_w, i_h) {
     let ul = document.createElement('ul')
     for(let j=0; j<config.col; j++){
       let li = document.createElement('li')
-      li.style.cssText = `width: ${li_width}px; height: ${li_height}px;`
       ul.appendChild(li)
     }
     temp_dom.appendChild(ul)
   }
-  puzzle_box.appendChild(temp_dom)
+  puzzle_wrap.appendChild(temp_dom)
+
+  if(config.col * config.row >= 100){
+    puzzle_box.classList.add('more100')
+  }
 }
 
 function startGame() {
