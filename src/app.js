@@ -83,7 +83,8 @@ function gameReady() {
   $('.step').classList.add('hide')
   $('.countDown').classList.add('show')
 
-  let count_down = 3
+  // let count_down = 3
+  let count_down = 1
   let countInterval
   countInterval = setInterval(() => {
     count_down -= 1
@@ -134,43 +135,75 @@ function spliceImg() {
   // 随机排列,随机旋转
   // 渲染分割的图片
   renderPiece(randomList(img_list))
+
+  // 渲染网格
+  renderGrid(img_width, img_height)
 }
 
 function randomList(list) {
-  let temp_list = []
+  let temp_list = [], angle=[0, 90, 180, 270]
   for (let i = 0, len = list.length; i < len; i++) {
-    let j = Math.floor(Math.random() * list.length)
+    let j = getRandomNumber(list.length)
     temp_list[i] = list.splice(j, 1)[0]
+    temp_list[i].rotate = angle[getRandomNumber(angle.length)]    
   }
   return temp_list  
 }
 
-function renderPiece(list) {
-  let ul, temp_dom = document.createDocumentFragment(), angle=[0, 90, 180, 270]
-  list.map((item, idx) => {
-    // let img = document.createElement('img')
-    // img.src = item.src
-    // 随机旋转图片
-    let random_factor = Math.floor(Math.random() * 3)
-    img.classList.add(`rotate${angle[random_factor]}`)
-    item.rotate = angle[random_factor]
+function getRandomNumber(length) {
+  return Math.floor(Math.random() * length) 
+}
 
+function renderPiece(list) {
+  console.log(list)
+  let temp_dom = document.createDocumentFragment()
+  list.map((item, idx) => {
+    let img = document.createElement('img')
+    img.src = item.src
+    // 随机旋转图片
+    img.classList.add(`rotate${item.rotate}`)
     let li = document.createElement('li')
     li.appendChild(img)
-    // 每行第一列时新建一个ul节点
-    if(item.y === 0){
-      ul = document.createElement('ul')
-    }
-    ul.appendChild(li)
-    // 最后一列时将ul推入临时dom
-    if(item.y === config.col-1){
-      temp_dom.appendChild(ul)
-    }
+    temp_dom.appendChild(li)
   })
-  $('#gameWrap').appendChild(temp_dom)
-  if(config.row * config.col >= 100){
-    $('#gameWrap').classList.add('more100')
+  $('#imgPiece ul').appendChild(temp_dom)
+  // if(config.row * config.col >= 100){
+  //   $('#puzzleBox').classList.add('more100')
+  // }
+}
+
+function renderGrid(i_w, i_h) {
+  // resize
+  let row_width, li_height
+  let puzzle_box = $('#puzzleBox')
+  // 求得当前区域可使用的大小
+  let max_width = puzzle_box.offsetWidth
+  let max_height = puzzle_box.offsetHeight
+  // 如果图片长宽比大于1
+  if(i_w >= i_h){
+    // 按长计算铺满整个区域,求得长边分割的每一块宽度
+    li_width = max_width / config.col
+    // 由 (li_width * col) / (li_height * row) === i_w / i_h
+    // li_width * col === max_width
+    li_height = (max_width * i_h) / (i_w * config.row) 
+  } else {
+    // 按图片高度铺满区域计算
+    li_height = max_height / config.row
+    li_width = (max_height * i_w) / (i_h * config.col)
   }
+
+  // 渲染网格
+  let temp_dom = document.createDocumentFragment()
+  for(let i=0; i<config.row; i++){
+    let ul = document.createElement('ul')
+    for(let j=0; j<config.col; j++){
+      let li = document.createElement('li')
+      li.style.cssText = `width: ${li_width}px; height: ${li_height}px;`
+      ul.appendChild(li)
+    }
+    temp_dom.appendChild(ul)
+  }
+  puzzle_box.appendChild(temp_dom)
 }
 
 function startGame() {
