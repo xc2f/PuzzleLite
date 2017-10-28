@@ -119,9 +119,11 @@ function spliceImg() {
 
   for(let i=0; i<config.row; i++){
     for(let j=0; j<config.col; j++){
+      // 绘制图片碎片
       // 必须是全参数
       ctx.drawImage(img, canvas.width * j, canvas.height * i, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height)
       let src = canvas.toDataURL('image/jpeg', 1)
+
       img_list.push({
         x: i,
         y: j,
@@ -129,22 +131,46 @@ function spliceImg() {
       })
     }
   }
-
+  // 随机排列,随机旋转
   // 渲染分割的图片
-  renderPiece(img_list)
+  renderPiece(randomList(img_list))
 }
 
+function randomList(list) {
+  let temp_list = []
+  for (let i = 0, len = list.length; i < len; i++) {
+    let j = Math.floor(Math.random() * list.length)
+    temp_list[i] = list.splice(j, 1)[0]
+  }
+  return temp_list  
+}
 
 function renderPiece(list) {
-  let temp_dom = document.createDocumentFragment()
+  let ul, temp_dom = document.createDocumentFragment(), angle=[0, 90, 180, 270]
   list.map((item, idx) => {
-    let img = document.createElement('img')
-    img.src = item.src
+    // let img = document.createElement('img')
+    // img.src = item.src
+    // 随机旋转图片
+    let random_factor = Math.floor(Math.random() * 3)
+    img.classList.add(`rotate${angle[random_factor]}`)
+    item.rotate = angle[random_factor]
+
     let li = document.createElement('li')
     li.appendChild(img)
-    temp_dom.appendChild(li)
+    // 每行第一列时新建一个ul节点
+    if(item.y === 0){
+      ul = document.createElement('ul')
+    }
+    ul.appendChild(li)
+    // 最后一列时将ul推入临时dom
+    if(item.y === config.col-1){
+      temp_dom.appendChild(ul)
+    }
   })
-  $('#gameWrap ul').appendChild(temp_dom)
+  $('#gameWrap').appendChild(temp_dom)
+  if(config.row * config.col >= 100){
+    $('#gameWrap').classList.add('more100')
+  }
 }
 
 function startGame() {

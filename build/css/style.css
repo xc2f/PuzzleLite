@@ -116,3 +116,45 @@ body {
   justify-content: center;
   align-items: center;
 }
+
+/* 拼图布局 */
+#gameWrap {
+
+}
+
+#gameWrap ul {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  list-style-type: none;
+}
+
+#gameWrap ul li {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #fff;
+}
+#gameWrap.more100 ul li {
+  border-width: 1px
+}
+#gameWrap ul li img {
+  width: 100%;
+  height: 100%;
+}
+
+#gameWrap img.rotate90 {
+  transform: rotate(90deg)
+}
+
+#gameWrap img.rotate180 {
+  transform: rotateX(180deg)
+}
+
+#gameWrap img.rotate270 {
+  transform: rotate(270deg)
+}
