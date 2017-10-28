@@ -22,6 +22,12 @@ let config = {
   selected: 'default-1',
 }
 
+// 当前正在移动的图片
+let draging_img = null
+
+// 图片打乱后的顺序
+let img_pos_list = []
+
 window.onload = () => {
   // 将预置的两张图片插入DOM
   $('.imgList img[data-tag="default-1"]').src = defaultImg['default-1']
@@ -145,7 +151,7 @@ function randomList(list) {
   for (let i = 0, len = list.length; i < len; i++) {
     let j = getRandomNumber(list.length)
     temp_list[i] = list.splice(j, 1)[0]
-    temp_list[i].rotate = angle[getRandomNumber(angle.length)]    
+    temp_list[i].rotate = angle[getRandomNumber(angle.length)]
   }
   return temp_list  
 }
@@ -155,16 +161,22 @@ function getRandomNumber(length) {
 }
 
 function renderPiece(list) {
-  console.log(list)
   let temp_dom = document.createDocumentFragment()
   list.map((item, idx) => {
     let img = document.createElement('img')
     img.src = item.src
-    // 随机旋转图片
+    
+    // draging_img的data-idx
+    img.setAttribute('data-idx', idx)
     img.classList.add(`rotate${item.rotate}`)
     let li = document.createElement('li')
     li.appendChild(img)
     temp_dom.appendChild(li)
+
+    img_pos_list.push({
+      x: item.x,
+      y: item.y
+    })
   })
   $('#imgPiece ul').appendChild(temp_dom)
   // if(config.row * config.col >= 100){
@@ -208,6 +220,8 @@ function renderGrid(i_w, i_h) {
     let ul = document.createElement('ul')
     for(let j=0; j<config.col; j++){
       let li = document.createElement('li')
+      li.setAttribute('data-x', i)
+      li.setAttribute('data-y', j)
       ul.appendChild(li)
     }
     temp_dom.appendChild(ul)
@@ -219,6 +233,197 @@ function renderGrid(i_w, i_h) {
   }
 }
 
+
+class Drag {
+  constructor(el) {
+    this.el = el
+    this.init()
+
+    // 可以不绑
+    this.dragStart = this.dragStart.bind(this);
+  }
+
+  init(){
+    this.onselectstart()
+    // 拖拽开始
+    this.el.addEventListener('dragstart', this.dragStart)
+    // 拖拽结束
+    this.el.addEventListener('dragend', this.dragEnd)
+
+  }
+  
+
+  onselectstart(){
+    // 取消选择功能
+    return false
+  }
+  dragStart(e){
+    e.dataTransfer.effectAllowed = "move";
+
+    // chrome下无效，改用全局传递
+    // e.dataTransfer.setData("text", '111111')
+    
+    draging_img = e.target
+    // TODO 优化缩略图显示
+    e.dataTransfer.setDragImage(draging_img, 0, 0);
+  }
+  dragEnd(e){
+  }
+
+}
+
+class Drop {
+  constructor(el) {
+    this.el = el
+    this.init()
+    // this.dragEnter = this.dragEnter.bind(this);
+  }
+  init(){
+    // 放
+    this.el.addEventListener('drop', this.drop)
+    // 进入
+    this.el.addEventListener('dragenter', this.dragEnter)
+    // 移动
+    this.el.addEventListener('dragover', this.dragOver) 
+    // 离开
+    this.el.addEventListener('dragleave', this.dragLeave)
+  }
+
+  drop(e){
+    let target = e.target
+    if(target.tagName === 'IMG'){
+      // dragEnter后，底部已经有了图片，总会是IMG
+      let is_blank = handleBeforeDrop(target)
+      if(is_blank){
+        target.src = draging_img.src
+        target.style.opacity = 1
+        target.setAttribute('data-f_idx', draging_img.getAttribute('data-idx'))
+        target.setAttribute('data-status', 'drop')
+      } else {
+        // 底部有旧的图片，需重新生成图片
+        let img = document.createElement('img')
+        img.src = draging_img.src
+        img.style.cssText = 'opacity: 1;'
+        img.setAttribute('data-f_idx', draging_img.getAttribute('data-idx'))
+        img.setAttribute('data-status', 'drop')
+        let parent_node = target.parentNode
+        parent_node.removeChild(parent_node.children[0])
+        parent_node.appendChild(img)
+        
+        target.removeAttribute('data-status')
+        let o_idx = target.getAttribute('data-f_idx')
+        target.setAttribute('data-idx', o_idx)
+        target.removeAttribute('data-f_idx')
+
+        // 将图片添加回底部
+        let li = document.createElement('li')
+        li.appendChild(target)
+        $('#imgPiece ul').appendChild(li)
+      }
+    }
+    draging_img = null
+    checkComplete()
+  }
+
+  // chrome 下必须阻止enter和over的默认行为，否则drop不触发
+  dragEnter(e){
+    e.preventDefault()
+    let target = e.target
+    if(target.tagName === 'LI' && target.children.length === 0){
+      let img = document.createElement('img')
+      img.src = draging_img.src
+      img.style.cssText = 'opacity: .7;'
+      target.appendChild(img)
+    }
+  }
+
+  dragOver(e){
+    e.preventDefault()
+    
+  }
+
+  dragLeave(e){
+    e.preventDefault()
+    let target = e.target
+    if(target.tagName === 'IMG' && !target.getAttribute('data-status')){
+      let parent_node = target.parentNode
+      parent_node.removeChild(parent_node.children[0])
+    }
+    //  else if (target.tagName === 'LI'){
+    //   let child_node = target.children[0]
+    //   if(!child_node.getAttribute('data-status')){
+    //     target.removeChild(child_node)
+    //   }
+    // }
+ }
+}
+
 function startGame() {
   $('.countDown').classList.remove('show')
+
+  bindEvent('#imgPiece ul li img', 'drag')
+
+  bindEvent('#puzzleBox .puzzleWrap li', 'drop')
+
+  console.log(img_pos_list)
 }
+
+function bindEvent(selector, type) {
+  let doms = $(selector)
+  
+  // 如果只返回了一个dom
+  if(doms && Array.from(doms).length <= 1 ) {
+    doms = [doms]
+  }
+  for(let i=0, len=doms.length; i<len; i++){
+    type === 'drag' ? new Drag(doms[i]) : new Drop(doms[i])
+  } 
+}
+
+function handleBeforeDrop(old_target_img) {
+  // 底部是否为空格子，默认为空
+  let target_blank = true
+  let parent_node = old_target_img.parentNode
+
+  // 目标li元素所处的位置，与img_pos_list存储的图片位置做比较
+  let p_x = Number(parent_node.getAttribute('data-x'))
+  let p_y = Number(parent_node.getAttribute('data-y'))
+
+  // 与img_pos_list存储的图片次序一致
+  let img_idx = Number(draging_img.getAttribute('data-idx'))
+
+  // 从底部列表中移除对应图片
+  let ul = $('#imgPiece ul')
+  ul.removeChild($(`#imgPiece ul img[data-idx="${img_idx}"]`).parentNode)
+  
+  if(old_target_img.getAttribute('data-status')){
+    target_blank = false
+    //reset 
+    new Drag(old_target_img)
+
+    // 恢复在img_pos_list的数据
+    let idx = Number(old_target_img.getAttribute('data-f_idx'))
+    img_pos_list[idx].sign = false
+    // dragEnter还是底部已有图片
+  } else {
+    // 落在空白格子上
+
+  }
+  // 检查是否填充到正确的位置，若正确，则img_pos_list对应位置添加一个true标记
+  let target_img = img_pos_list[img_idx]
+  if(target_img.x === p_x && target_img.y === p_y){
+    img_pos_list[img_idx].sign = true
+  }
+
+  return target_blank
+}
+
+function checkComplete() {
+  for(let i=0, len=img_pos_list.length; i<len; i++){
+    if(!img_pos_list[i].sign){
+      return
+    }
+  }
+  alert('complete!')
+}
+
