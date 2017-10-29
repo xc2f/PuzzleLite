@@ -2,7 +2,7 @@
 <html lang="zh">
 
 <head>
-  <title>拼图游戏</title>
+  <title>PuzzleLite - 轻巧拼图</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- <link href="css/style.css" rel="stylesheet"> -->
@@ -10,17 +10,25 @@
 
 <body>
   <div id="root">
-    <div id="records">记录</div>
+    <div class="left">
+      <div id="records">
+        <ul class="current">
+        </ul>
+        <ul class="history"></ul>
+      </div>
+      <div class="btn-group">
+      </div>
+    </div>
     <div id="container">
       <div class="step">
         <div class="step1">
           <div class="title">请选择一张图片</div>
           <ul class="imgList clearfix">
             <li class="selected">
-              <img data-tag="default-1" alt="default image 1">
+              <img data-tag="default-1" alt="Super-Mario-Odyssey">
             </li>
             <li>
-              <img data-tag="default-2" alt="default image 2">
+              <img data-tag="default-2" alt="Zelda">
             </li>
           </ul>
           <p>或</p>
@@ -31,21 +39,21 @@
           <div class="grade">
             <label for="divideRow">分割比例</label>
             <div>
-              <input id="divideRow" type="number" step="1" name="divide-row" value="3"> 行 x
+              <input id="divideRow" type="number" step="1" name="divide-row" value="3" autofocus> 行 x
               <input id="divideCol" type="number" step="1" name="divide-col" value="4"> 列
             </div>
           </div>
           <button id="startGame" type="button">开始</button>
         </div>
       </div>
-      <div class="countDown">
+      <div class="countDown hide">
         <span>3</span>...
       </div>
       <div id="puzzleBox">
         <div class="puzzleWrap"></div>
       </div>
-      <div id="imgPiece">
-        <ul class="clearfix "></ul>
+      <div id="imgPiece" class="hide">
+        <ul class="clearfix"></ul>
       </div>
     </div>
   </div>

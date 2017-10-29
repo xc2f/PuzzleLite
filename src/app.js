@@ -8,7 +8,8 @@
 
 'use strict'
 
-import defaultImg from "./utils/defaultImg.js"
+import defaultImg from "./utils/defaultImg"
+import fromNow,{ computeTime, parseTime } from "./utils/moment";
 import './app.css'
 
 let $ = dom => {
@@ -21,6 +22,7 @@ let config = {
   row: 3,
   col: 4,
   selected: 'default-1',
+  filename: 'Super-Mario-Odyssey'
 }
 
 // 当前正在移动的图片
@@ -32,6 +34,29 @@ let img_pos_list = []
 // 从顶部移动图片时的原始坐标信息
 let o_li = null
 
+// 当前拼图开始时间
+let start_time = null
+// 计时函数
+let game_timing_interval = null
+let refresh_records_interval = null
+
+let storage = window.sessionStorage
+
+/**
+ * 
+ * @param {string} name - node名
+ * @param {string} classname - node类名
+ * @param {string} id - node id
+ * @param {Object} data - data属性，{name: name, value: value}
+ */
+function createNode(name, text, classname, id, data) {
+  let dom = document.createElement(name)
+  text && (dom.textContent = text)
+  classname && dom.classList.add(classname)
+  id && (dom.id = id)
+  data && dom.setAttribute(data.title, data.value)
+  return dom
+}
 
 window.onload = () => {
   // 将预置的两张图片插入DOM
@@ -40,6 +65,7 @@ window.onload = () => {
 
   initApp()
 }
+
 
 function initApp() {
   // 添加新图片
@@ -59,30 +85,77 @@ function initApp() {
 
   // 开始游戏
   $('#startGame').addEventListener('click', gameReady)
+
+  // 读取storage中的数据
+  getStorage('init')
+}
+
+function getStorage(type) {
+  if(type === 'init'){
+    let records = storage.getItem('records')
+    if(records){
+      renderRecords(JSON.parse(records))
+    }
+  }
+}
+
+function renderRecords(data) {
+  let temp_dom = document.createDocumentFragment()
+  data.map((item, idx) => {
+    let label = createNode('label', data.length - idx)
+    let time = createNode('time', fromNow(item.start_time), '', '', {
+      title: 'datetime',
+      value: item.start_time
+    })
+    let span_title = createNode('span', item.file_name, 'title')
+    let span_time = createNode('span', item.use_time, 'useTime')
+    let li = createNode('li', '', '', '', {
+      title: 'title',
+      value: new Date(item.start_time)
+    })
+    li.appendChild(label)
+    li.appendChild(time)
+    li.appendChild(span_title)
+    li.appendChild(span_time)
+    temp_dom.appendChild(li)
+  })
+  $('#records .history').innerText = ''
+  $('#records .history').appendChild(temp_dom)
+  if(!refresh_records_interval){
+    refresh_records_interval = setInterval(() => {
+      Array.from(document.querySelectorAll('#records .history time')).map(item => {
+        item.innerText = fromNow(Number(item.getAttribute('datetime')))
+      })
+    }, 1000 * 30)
+  }
 }
 
 function addImg(event) {
   let files = Array.from(event.target.files)
-  files.map(img => {
+  files.map(file => {
     let reader = new FileReader()
-    reader.readAsDataURL(img)
+    reader.readAsDataURL(file)
     reader.onload = e => {
       let img = document.createElement('img')
       img.src = e.target.result
       img.setAttribute('data-tag', new Date().getTime())
+      img.alt = file.name.slice(0, file.name.lastIndexOf('.')) || ' '
       let li = document.createElement('li')
       li.appendChild(img)
-      $('.step .imgList').insertBefore(li, $('.step .imgList li')[0])       
+      $('.step .imgList').insertBefore(li, $('.step .imgList li')[0])
+      // 选中新上传的图片
+      selectImg(img, 'add')  
     }
   })
   // 将input@file值置空，避免同一文件不触发事件.也无必要
   $('#imgUpload').value = ''
 }
 
-function selectImg(event) {
-  let target = event.target
+function selectImg(event, type) {
+  let target = type==='add' ? event : event.target
   if(target.tagName === 'IMG'){
     config.selected = target.getAttribute('data-tag')
+    config.filename = target.getAttribute('alt')
     Array.from(target.parentNode.parentNode.children).map(item => {
       item.removeAttribute('class')
     })
@@ -90,18 +163,51 @@ function selectImg(event) {
   }
 }
 
+function reset(toHome) {
+  $('.puzzleWrap').innerText = ''
+  $('#imgPiece ul').innerText = ''
+  $('.left .btn-group').innerText = ''
+  $('#records .current').innerText = ''
+  $('#imgPiece').classList.add('hide')
+  if(toHome){
+    $('.step').classList.remove('hide')
+  } else {
+    gameReady()
+  }
+  gameTiming('reset')
+}
+
+// 游戏过程中的计时函数
+function gameTiming(type, time_dom, timing_dom) {
+  time_dom = time_dom || $('#records .current time')
+  timing_dom = timing_dom || $('#records .current span')
+  if(type === 'start'){
+    timing_dom.innerText = computeTime(new Date().getTime() - start_time)
+    game_timing_interval = setInterval(() => {
+      time_dom.innerText = parseTime(Number(time_dom.getAttribute('datetime')))
+      timing_dom.innerText = computeTime(new Date().getTime() - start_time)
+    }, 1000)
+  } else if(type === 'complete'){
+    // 写入storage
+    clearInterval(game_timing_interval)
+  } else if (type === 'reset'){
+    clearInterval(game_timing_interval)
+  }
+}
+
 function gameReady() {
   $('.step').classList.add('hide')
-  $('.countDown').classList.add('show')
+  $('.countDown').classList.remove('hide')
 
-  // let count_down = 3
-  let count_down = 1
+  let count_down = 3
   let countInterval
   countInterval = setInterval(() => {
     count_down -= 1
     $('.countDown span').innerText = count_down
     if(count_down === 0) {
       clearInterval(countInterval)
+      $('.countDown').classList.add('hide')
+      $('.countDown span').innerText = 3
       startGame()
     }
   }, 1000)
@@ -109,6 +215,58 @@ function gameReady() {
   // 裁剪图片
   spliceImg()
 }
+
+
+function startGame() {
+  
+    bindEvent('#imgPiece ul li img', 'drag')
+  
+    bindEvent('#puzzleBox .puzzleWrap li', 'drop')
+  
+    // 左侧按钮
+    let btn_to_home = createNode('button', '回到主页')
+    let btn_replay = createNode('button', '重新开始')
+    let btn_group = $('.left .btn-group')
+    btn_group.appendChild(btn_to_home)
+    btn_group.appendChild(btn_replay)
+    btn_to_home.addEventListener('click', () => reset(true))
+    btn_replay.addEventListener('click', () => reset(false))
+
+
+    // 左侧计时
+    let li_title = createNode('li', config.filename, 'name')
+    let now = new Date().getTime()
+    start_time = now
+    let time = createNode('time', fromNow(now), '', '', {
+      title: 'datetime',
+      value: start_time
+    })
+    let span = createNode('span', '')
+    let li_time = createNode('li', '', 'timing')
+    li_time.appendChild(time)
+    li_time.appendChild(span)
+    let target_dom = $('#records .current')
+    target_dom.appendChild(li_title)
+    target_dom.appendChild(li_time)
+    gameTiming('start', time, span)
+
+    // 开启底部图片
+    $('#imgPiece').classList.remove('hide')
+    
+  }
+  
+function bindEvent(selector, type) {
+  let doms = $(selector)
+  
+  // 如果只返回了一个dom
+  if(doms && Array.from(doms).length <= 1 ) {
+    doms = [doms]
+  }
+  for(let i=0, len=doms.length; i<len; i++){
+    type === 'drag' ? new Drag(doms[i]) : new Drop(doms[i])
+  } 
+}
+
 
 // 裁剪图片
 function spliceImg() {
@@ -366,27 +524,9 @@ class Drop {
   }
 }
 
-function startGame() {
-  $('.countDown').classList.remove('show')
 
-  bindEvent('#imgPiece ul li img', 'drag')
 
-  bindEvent('#puzzleBox .puzzleWrap li', 'drop')
-
-  console.log(img_pos_list)
-}
-
-function bindEvent(selector, type) {
-  let doms = $(selector)
-  
-  // 如果只返回了一个dom
-  if(doms && Array.from(doms).length <= 1 ) {
-    doms = [doms]
-  }
-  for(let i=0, len=doms.length; i<len; i++){
-    type === 'drag' ? new Drag(doms[i]) : new Drop(doms[i])
-  } 
-}
+// TODO 下面两个函数可优化
 
 function handleSourceFromPiece(target) {
   /**
@@ -523,9 +663,22 @@ function checkComplete() {
       return
     }
   }
+  gameTiming('complete')
   $('#puzzleBox').classList.add('complete')
   Array.from($('#puzzleBox li img')).map(item => {
     item.setAttribute('draggable', false)
   })
+  // 成绩写入storage
+  let records = JSON.parse(storage.getItem('records'))
+  if(!records){
+    records = []
+  }
+  records.unshift({
+    start_time: start_time,
+    use_time: $('#records .current span').innerText,
+    file_name: config.filename
+  })
+  renderRecords(records)
+  storage.setItem('records', JSON.stringify(records))
 }
 

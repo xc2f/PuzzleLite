@@ -7,7 +7,8 @@ module.exports = {
     devtool: 'source-map', // 调试时定位到编译前的代码位置，推荐安装react插件
     output: {
         path: path.resolve(__dirname, "./build/"),
-        filename: 'bundle.js' // 打包输出的文件
+        filename: 'bundle.js', // 打包输出的文件
+        publicPath: path.join(__dirname, "./build/"),
     },
     module: {
         rules: [
@@ -23,7 +24,7 @@ module.exports = {
                 exclude: /node_modules/,
                 use: [
                     {
-                        loader: 'style-loader'
+                        loader: 'style-loader',
                     }, {
                         loader: 'css-loader',
                         options: {
