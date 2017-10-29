@@ -28,6 +28,10 @@ let draging_img = null
 // 图片打乱后的顺序
 let img_pos_list = []
 
+// 从顶部移动图片时的原始坐标信息
+let o_li = null
+
+
 window.onload = () => {
   // 将预置的两张图片插入DOM
   $('.imgList img[data-tag="default-1"]').src = defaultImg['default-1']
@@ -266,6 +270,12 @@ class Drag {
     draging_img = e.target
     // TODO 优化缩略图显示
     e.dataTransfer.setDragImage(draging_img, 0, 0);
+
+    // 从上面grid移动，存储移动前li坐标，只有上面的格子有
+    if(e.target.parentNode.getAttribute('data-x')){
+      e.target.style.opacity = .7
+      o_li = e.target.parentNode
+    }
   }
   dragEnd(e){
   }
@@ -291,37 +301,22 @@ class Drop {
 
   drop(e){
     let target = e.target
+    // dragEnter后，底部已经有了图片，总会是IMG
     if(target.tagName === 'IMG'){
-      // dragEnter后，底部已经有了图片，总会是IMG
-      let is_blank = handleBeforeDrop(target)
-      if(is_blank){
-        target.src = draging_img.src
-        target.style.opacity = 1
-        target.setAttribute('data-f_idx', draging_img.getAttribute('data-idx'))
-        target.setAttribute('data-status', 'drop')
-      } else {
-        // 底部有旧的图片，需重新生成图片
-        let img = document.createElement('img')
-        img.src = draging_img.src
-        img.style.cssText = 'opacity: 1;'
-        img.setAttribute('data-f_idx', draging_img.getAttribute('data-idx'))
-        img.setAttribute('data-status', 'drop')
-        let parent_node = target.parentNode
-        parent_node.removeChild(parent_node.children[0])
-        parent_node.appendChild(img)
-        
-        target.removeAttribute('data-status')
-        let o_idx = target.getAttribute('data-f_idx')
-        target.setAttribute('data-idx', o_idx)
-        target.removeAttribute('data-f_idx')
+      /**
+       * 需判断两个东西
+       * 1，拖拽元素的来源，o_li
+       * 2，初次放置还是替换，target.getAttribute('data-status')
+       */
+      // target_img是拖拽后处在新位置的图片      
+      let target_img = o_li ? handleSourceFromGrid(target) : handleSourceFromPiece(target)
 
-        // 将图片添加回底部
-        let li = document.createElement('li')
-        li.appendChild(target)
-        $('#imgPiece ul').appendChild(li)
-      }
+      target_img && new Drag(target_img)
     }
+
+    // drop后，o_li必须设置为null，因为要用o_li检测拖拽元素的来源
     draging_img = null
+    o_li = null
     checkComplete()
   }
 
@@ -329,6 +324,7 @@ class Drop {
   dragEnter(e){
     e.preventDefault()
     let target = e.target
+    // 目标元素是li并且没有子元素，即为空
     if(target.tagName === 'LI' && target.children.length === 0){
       let img = document.createElement('img')
       img.src = draging_img.src
@@ -345,6 +341,7 @@ class Drop {
   dragLeave(e){
     e.preventDefault()
     let target = e.target
+    // 离开时，由enter事件，底部为img元素，当且仅当底部图片的状态非drop时
     if(target.tagName === 'IMG' && !target.getAttribute('data-status')){
       let parent_node = target.parentNode
       parent_node.removeChild(parent_node.children[0])
@@ -380,42 +377,129 @@ function bindEvent(selector, type) {
   } 
 }
 
-function handleBeforeDrop(old_target_img) {
-  // 底部是否为空格子，默认为空
-  let target_blank = true
-  let parent_node = old_target_img.parentNode
+function handleSourceFromPiece(target) {
+  /**
+   * target两种情况
+   * 一，初次放置，此时是dragEnter事件添加opacity为.7的图片
+   * 二，替换，此时图片有data-status='drop'的信息
+   */
+  let new_img = target
+  let parent_node = target.parentNode
 
-  // 目标li元素所处的位置，与img_pos_list存储的图片位置做比较
+  // 目标li元素（grid中的）所处的位置信息，与img_pos_list存储的图片位置做比较
   let p_x = Number(parent_node.getAttribute('data-x'))
   let p_y = Number(parent_node.getAttribute('data-y'))
 
   // 与img_pos_list存储的图片次序一致
   let img_idx = Number(draging_img.getAttribute('data-idx'))
 
-  // 从底部列表中移除对应图片
+  // 从底部列表中移除对应图片，仅在从底部拖拽图片时有效
   let ul = $('#imgPiece ul')
   ul.removeChild($(`#imgPiece ul img[data-idx="${img_idx}"]`).parentNode)
   
-  if(old_target_img.getAttribute('data-status')){
-    target_blank = false
-    //reset 
-    new Drag(old_target_img)
+  if(target.getAttribute('data-status')){
+    // 为替换
+    let img = document.createElement('img')
+    img.src = draging_img.src
+    img.style.cssText = 'opacity: 1;'
+    img.setAttribute('data-idx', draging_img.getAttribute('data-idx'))
+    img.setAttribute('data-status', 'drop')
+    // 指向新图片
+    new_img = img
+
+    // 移除原有的图片并添加新的
+    let parent_node = target.parentNode
+    parent_node.removeChild(parent_node.children[0])
+    parent_node.appendChild(img)
+
+    // 将图片添加回底部，并重新添加事件
+    let li = document.createElement('li')
+    target.removeAttribute('data-status')
+    new Drag(target)
+    li.appendChild(target)
+    $('#imgPiece ul').appendChild(li)
 
     // 恢复在img_pos_list的数据
-    let idx = Number(old_target_img.getAttribute('data-f_idx'))
+    let idx = Number(target.getAttribute('data-idx'))
     img_pos_list[idx].sign = false
-    // dragEnter还是底部已有图片
   } else {
-    // 落在空白格子上
-
+    // 初次放置
+    target.src = draging_img.src
+    target.style.opacity = 1
+    target.setAttribute('data-idx', draging_img.getAttribute('data-idx'))
+    target.setAttribute('data-status', 'drop')
   }
+
   // 检查是否填充到正确的位置，若正确，则img_pos_list对应位置添加一个true标记
   let target_img = img_pos_list[img_idx]
   if(target_img.x === p_x && target_img.y === p_y){
+
     img_pos_list[img_idx].sign = true
   }
 
-  return target_blank
+  return new_img
+}
+
+function handleSourceFromGrid(target){
+  let parent_node = target.parentNode
+  
+  // 目标li元素（grid中的）所处的位置信息，与img_pos_list存储的图片位置做比较
+  let p_x = Number(parent_node.getAttribute('data-x'))
+  let p_y = Number(parent_node.getAttribute('data-y'))
+
+  // 与img_pos_list存储的图片次序一致
+  let img_idx = Number(draging_img.getAttribute('data-idx'))
+
+  if(target.getAttribute('data-status')){
+    let img1 = document.createElement('img')
+    img1.src = target.src
+    img1.style.cssText = 'opacity: 1;'
+    img1.setAttribute('data-idx', target.getAttribute('data-idx'))
+    img1.setAttribute('data-status', 'drop')
+    new Drag(img1)
+
+    o_li.removeChild(o_li.children[0])
+    o_li.appendChild(img1)
+
+
+    let img2 = document.createElement('img')
+    img2.src = draging_img.src
+    img2.style.cssText = 'opacity: 1;'
+    img2.setAttribute('data-idx', draging_img.getAttribute('data-idx'))
+    img2.setAttribute('data-status', 'drop')
+    new Drag(img2)
+
+    // 移除原有的图片并添加新的
+    let parent_node = target.parentNode
+    parent_node.removeChild(parent_node.children[0])
+    parent_node.appendChild(img2)
+
+    let o_x = Number(o_li.getAttribute('data-x'))
+    let o_y = Number(o_li.getAttribute('data-y'))
+    let target_img_idx = Number(target.getAttribute('data-idx'))
+    let target_img = img_pos_list[target_img_idx]
+    if(target_img.x === o_x && target_img.y === o_y){
+      img_pos_list[target_img_idx].sign = true
+    } else {
+      img_pos_list[target_img_idx].sign = false
+    }
+  } else {
+    o_li.removeChild(o_li.children[0])
+
+    target.src = draging_img.src
+    target.style.opacity = 1
+    target.setAttribute('data-idx', draging_img.getAttribute('data-idx'))
+    target.setAttribute('data-status', 'drop')
+
+    new Drag(target)
+  }
+  // 检查是否填充到正确的位置，若正确，则img_pos_list对应位置添加一个true标记
+  let new_img = img_pos_list[img_idx]
+  if(new_img.x === p_x && new_img.y === p_y){
+    img_pos_list[img_idx].sign = true
+  } else {
+    img_pos_list[img_idx].sign = false
+  }
 }
 
 function checkComplete() {
@@ -424,6 +508,9 @@ function checkComplete() {
       return
     }
   }
-  alert('complete!')
+  $('#puzzleBox').classList.add('complete')
+  Array.from($('#puzzleBox li img')).map(item => {
+    item.setAttribute('draggable', false)
+  })
 }
 

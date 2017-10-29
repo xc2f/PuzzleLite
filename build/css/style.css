@@ -166,6 +166,13 @@ body {
   height: 100%;
 }
 
+#puzzleBox.complete ul li {
+  border-width: 0;
+  -webkit-transition: all 70ms;
+  -moz-transition: all 70ms;
+  transition: all 70ms;
+}
+
 
 /* 底部imgPiece */
 #imgPiece {
