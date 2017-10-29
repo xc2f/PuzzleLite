@@ -2,13 +2,14 @@
  * @author Pysics@github
  * @email hellowd93@163.com
  * @create date 2017-10-27 19:53:36
- * @modify date 2017-10-28 01:42:28
+ * @modify date 2017-10-29 16:27:39
  * @desc 拼图小游戏 HTML5 ES6+
  */
 
 'use strict'
 
 import defaultImg from "./utils/defaultImg.js"
+import './app.css'
 
 let $ = dom => {
   let result = document.querySelectorAll(dom)
@@ -323,7 +324,11 @@ class Drop {
   // chrome 下必须阻止enter和over的默认行为，否则drop不触发
   dragEnter(e){
     e.preventDefault()
+    // e.stopPropagation()
     let target = e.target
+    console.log('================= enter ===================');
+    console.log(target.tagName);
+    console.log('================= enter ===================');
     // 目标元素是li并且没有子元素，即为空
     if(target.tagName === 'LI' && target.children.length === 0){
       let img = document.createElement('img')
@@ -340,19 +345,25 @@ class Drop {
 
   dragLeave(e){
     e.preventDefault()
+    // e.stopPropagation()
     let target = e.target
+    
+    console.log('================= leave ===================');
+    console.log(target.tagName);
+    console.log('================= leave ===================');
     // 离开时，由enter事件，底部为img元素，当且仅当底部图片的状态非drop时
     if(target.tagName === 'IMG' && !target.getAttribute('data-status')){
       let parent_node = target.parentNode
+      console.log(parent_node.children)
       parent_node.removeChild(parent_node.children[0])
     }
-    //  else if (target.tagName === 'LI'){
+    // else if (target.tagName === 'LI'){
     //   let child_node = target.children[0]
     //   if(!child_node.getAttribute('data-status')){
     //     target.removeChild(child_node)
     //   }
     // }
- }
+  }
 }
 
 function startGame() {
@@ -451,6 +462,10 @@ function handleSourceFromGrid(target){
   let img_idx = Number(draging_img.getAttribute('data-idx'))
 
   if(target.getAttribute('data-status')){
+    if(target.getAttribute('data-idx') === draging_img.getAttribute('data-idx')){
+      target.style.opacity = 1
+      return
+    }
     let img1 = document.createElement('img')
     img1.src = target.src
     img1.style.cssText = 'opacity: 1;'
