@@ -68,6 +68,9 @@ window.onload = () => {
 
 
 function initApp() {
+  // 主页布局
+  initStepLayout()
+
   // 添加新图片
   $('#imgUpload').addEventListener('change', addImg)
 
@@ -75,25 +78,172 @@ function initApp() {
   $('.imgList').addEventListener('click', selectImg)
 
   // 设置图片分割数
-  $('.grade #divideRow').addEventListener('change', event => {
+  $('.gradeInput p').addEventListener('click', showGradeInput)
+  $('.grade #divideRow').addEventListener('input', event => {
+    handleInput(event, 'row')
     // TODO number和parseInt的不同, 事件流 捕获和冒泡
-    config.row = Number(event.target.value)
+    // config.row = Number(event.target.value)
   })
-  $('.grade #divideCol').addEventListener('change', event => {
-    config.col = Number(event.target.value)
+  $('.grade #divideCol').addEventListener('input', event => {
+    handleInput(event, 'col')
+    // config.col = Number(event.target.value)
   })
+
 
   // 开始游戏
   $('#startGame').addEventListener('click', gameReady)
 
   // 读取storage中的数据
   getStorage('init')
+
+  // 渲染难度格子
+  renderSelectGrid()
+  // 移动选取事件
+  let grid_wrap = $('.gridWrap')
+  grid_wrap.addEventListener('mouseover', drawGrid)
+  // 确定选择
+  grid_wrap.addEventListener('click', e =>{
+    drawGrid(e, true)
+  })
+  grid_wrap.addEventListener('mouseleave', renderSelectGrid)
+
+}
+
+
+
+function showGradeInput() {
+  $('.gradeInput p').classList.add('hide')
+  $('.gradeInput .inputWrap').classList.remove('hide')
+  $('#divideRow').focus()
+}
+
+function handleInput(e, field) {
+  let value = e.target.value
+  // if(!value) {
+  //   return
+  // }
+  // 防止以0开头但有效的数字
+  value = String(Number(value))
+
+let test = value.match(/^[1-9]\d*/)
+  let is_validate = false
+  if(test && test[0] === value){
+    is_validate = true
+  }
+
+  if(field === 'row'){
+    is_validate ? $('#divideRow').classList.remove('invalidata') : $('#divideRow').classList.add('invalidata')
+    config.row =  Number(e.target.value)
+  } else {
+    is_validate ? $('#divideCol').classList.remove('invalidata') : $('#divideCol').classList.add('invalidata')
+    config.col =  Number(e.target.value)
+  }
+  // 绘制Grid
+  renderSelectGrid()
+
+  isAllValidate() ? $('.inputWrap span').classList.add('hidden') : $('.inputWrap span').classList.remove('hidden')
+}
+
+function isAllValidate(){
+  let input_invalidate = $('.inputWrap .invalidata')
+  let start_game_btn = $('#startGame')
+  if(input_invalidate){
+    start_game_btn.disabled = true
+    start_game_btn.classList.add('disabled')
+  } else {
+    start_game_btn.disabled = false
+    start_game_btn.classList.remove('disabled') 
+  }
+  return input_invalidate ? false : true
+
+}
+
+function initStepLayout() {
+  let w_h = $('#container').offsetHeight
+  // 100是底部开始高度，200是中间设置难度的高度, 50是中间的margin，100是上传文件，20未知
+  $('.step1 .imgList').style.maxHeight = (w_h - 100 - 200 - 50 * 2 - 100 - 20) + 'px'
+  
+  let step1_h = $('.step .step1').offsetHeight
+  console.log(step1_h)
+  $('.tip .tip2').style.top = step1_h + 100 + 'px'
+  $('.tip .tip3').style.top = step1_h + 335 + 'px'
+    // .tip2 {
+    //   top: 70%;
+    // }
+    // .tip3 {
+    //   bottom: 10%;
+    // }
+}
+
+function renderSelectGrid() {
+  $('.gridWrap').addEventListener('mouseover', drawGrid)
+  let dom_li = $('.gridWrap li')
+  Array.from(dom_li).map(item => {
+    let item_idx = item.getAttribute('data-p').split('')
+    if(item_idx[0] > config.row-1 || item_idx[1] > config.col-1){
+      item.classList.remove('selected')
+    } else {
+      item.classList.add('selected')
+    }
+  })
+
+  let dom_label = $('.gridWrap span.label')
+  Array.from(dom_label).map(item => {
+    let type = item.getAttribute('data-type')
+    let num = Number(item.getAttribute('data-value')) + 1
+    if(( num === config.col && type==='col') || ( num === config.row && type==='row') ) {
+      item.classList.remove('hidden')
+    } else {
+      item.classList.add('hidden')
+    }
+  })
+}
+
+function drawGrid(e, confirm) {
+  let target = e.target
+  if(target.tagName!== 'LI') {
+    renderSelectGrid()
+    return
+  }
+  let target_idx = target.getAttribute('data-p').split('')
+  
+  let dom_li = $('.gridWrap li')
+  Array.from(dom_li).map(item => {
+    let item_idx = item.getAttribute('data-p').split('')
+    if(item_idx[0] > target_idx[0] || item_idx[1] > target_idx[1]){
+      item.classList.remove('selected')
+    } else {
+      item.classList.add('selected')
+    }
+  })
+
+  // 最外边标记
+  let dom_label = $('.gridWrap span.label')
+  Array.from(dom_label).map(item => {
+    let type = item.getAttribute('data-type')
+    let num = item.getAttribute('data-value')
+    if(( num === target_idx[1] && type==='col') || ( num === target_idx[0] && type==='row') ) {
+      item.classList.remove('hidden')
+    } else {
+      item.classList.add('hidden')
+    }
+  })
+  if(confirm){
+    $('.gridWrap').removeEventListener('mouseover', drawGrid)
+    let row = Number(target_idx[0]) + 1
+    let col = Number(target_idx[1]) + 1
+    config.row = row
+    config.col = col
+    $('#divideRow').value = row
+    $('#divideCol').value = col
+  }
 }
 
 function getStorage(type) {
   if(type === 'init'){
     let records = storage.getItem('records')
     if(records){
+      $('.tip').classList.add('hide')
       renderRecords(JSON.parse(records))
     }
   }
@@ -149,6 +299,11 @@ function addImg(event) {
   })
   // 将input@file值置空，避免同一文件不触发事件.也无必要
   $('#imgUpload').value = ''
+  
+  setTimeout(function() {
+    // 重置UI，左边的指示高度
+    initStepLayout()
+  }, 200);
 }
 
 function selectImg(event, type) {
@@ -167,8 +322,13 @@ function reset(toHome) {
   $('.puzzleWrap').innerText = ''
   $('#imgPiece ul').innerText = ''
   $('.left .btn-group').innerText = ''
+  $('.left .btn-group').classList.add('hide')
   $('#records .current').innerText = ''
   $('#imgPiece').classList.add('hide')
+  $('#puzzleBox').classList.remove('complete')
+  $('#records').style.height = '100%'
+  // start_time = null
+  img_pos_list =[]
   if(toHome){
     $('.step').classList.remove('hide')
   } else {
@@ -196,8 +356,10 @@ function gameTiming(type, time_dom, timing_dom) {
 }
 
 function gameReady() {
+
   $('.step').classList.add('hide')
   $('.countDown').classList.remove('hide')
+  $('.tip').classList.add('hide')
 
   let count_down = 3
   let countInterval
@@ -224,14 +386,15 @@ function startGame() {
     bindEvent('#puzzleBox .puzzleWrap li', 'drop')
   
     // 左侧按钮
-    let btn_to_home = createNode('button', '回到主页')
-    let btn_replay = createNode('button', '重新开始')
+    let btn_to_home = createNode('button', '回到主页', 'backHome')
+    let btn_replay = createNode('button', '重新开始', 'rePlay')
     let btn_group = $('.left .btn-group')
     btn_group.appendChild(btn_to_home)
     btn_group.appendChild(btn_replay)
     btn_to_home.addEventListener('click', () => reset(true))
     btn_replay.addEventListener('click', () => reset(false))
-
+    $('.left .btn-group').classList.remove('hide')
+    $('#records').style.height = 'auto'
 
     // 左侧计时
     let li_title = createNode('li', config.filename, 'name')
@@ -484,9 +647,6 @@ class Drop {
     e.preventDefault()
     // e.stopPropagation()
     let target = e.target
-    console.log('================= enter ===================');
-    console.log(target.tagName);
-    console.log('================= enter ===================');
     // 目标元素是li并且没有子元素，即为空
     if(target.tagName === 'LI' && target.children.length === 0){
       let img = document.createElement('img')
@@ -506,9 +666,6 @@ class Drop {
     // e.stopPropagation()
     let target = e.target
     
-    console.log('================= leave ===================');
-    console.log(target.tagName);
-    console.log('================= leave ===================');
     // 离开时，由enter事件，底部为img元素，当且仅当底部图片的状态非drop时
     if(target.tagName === 'IMG' && !target.getAttribute('data-status')){
       let parent_node = target.parentNode
@@ -658,6 +815,7 @@ function handleSourceFromGrid(target){
 }
 
 function checkComplete() {
+  console.log(img_pos_list)
   for(let i=0, len=img_pos_list.length; i<len; i++){
     if(!img_pos_list[i].sign){
       return
@@ -680,5 +838,8 @@ function checkComplete() {
   })
   renderRecords(records)
   storage.setItem('records', JSON.stringify(records))
+
+  // 底部信息
+
 }
 

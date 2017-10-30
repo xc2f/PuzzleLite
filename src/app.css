@@ -1,20 +1,71 @@
-
 $base_color: #ffc107;
-
-*,
-*:before,
-*:after {
-  box-sizing: inherit;
+$primary_color: #0069d9;
+$primary_color_hover: #0069d9;
+$secondary_color: #868e96;
+$secondary_color_hover: #727b84;
+$info_color: #17a2b8;
+$info_color_hover: #138496;
+$success_color: #28a745;
+$success_color_hover: #218838;
+$warning_color: #ffc107;
+$warning_color_hover: #e0a800;
+$danger_color: #dc3545;
+$danger_color_hover: #c82333;
+@define-mixin text_nowrap $width {
+  width: $width;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-html {
-  box-sizing: border-box;
-
-  body {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@define-mixin button_common $width, $bg_color {
+  width: $width;
+  background-color: $bg_color;
+  color: #fff;
+  border: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0px;
+  padding: 0px;
+  outline: none;
+  font-size: inherit;
+  position: relative;
+  height: 36px;
+  line-height: 36px;
+  border-radius: 2px;
+  transition: all 250ms;
+  text-align: center;
+  box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+  &:hover {
+    border-radius: 0;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 10px, rgba(0, 0, 0, 0.23) 0px 3px 10px;
   }
+}
+
+@define-mixin flex $direction {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: center;
+  align-items: center;
+}
+
+@define-mixin orStyle {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ccc;
+}
+
+@define-mixin input_reset $padding {
+  border: none;
+  outline: none;
+  padding: $padding;
+}
+
+
+@define-mixin button_disabled {
+  background: #ddd;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .clearfix:after {
@@ -24,14 +75,33 @@ html {
   height: 0;
   clear: both;
 }
+
 .hidden {
   visibility: hidden!important;
 }
+
 .hide {
   /* opacity: 0; */
   display: none!important;
 }
 
+
+/* ======================================= */
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+}
 
 #root {
   overflow: hidden;
@@ -46,61 +116,227 @@ html {
   height: 100%;
   display: flex;
   flex-direction: column;
-  // box-shadow: 2px 1px 3px rgba(0, 0, 0, .3);
   border-right: 2px solid #eee;
+  position: relative;
+  .tip {
+    & * {
+      position: absolute;
+      right: 0;
+      font-size: 13px;
+      color: $secondary_color;
+      padding: 0 5px 2px 0;
+      border-bottom: 2px solid #eee;
+      transition: all 200ms;
+    }
+    .tip1 {
+      top: 10%;
+    }
+  }
   #records {
     flex: 3;
   }
   .btn-group {
+    @mixin flex column;
     flex: 1;
+    margin: 10px;
+    button {
+      max-width: 200px;
+      &.backHome {
+        @mixin button_common 100%,
+        $primary_color;
+        margin-bottom: 20px;
+      }
+      &.rePlay {
+        @mixin button_common 100%,
+        $info_color;
+      }
+    }
   }
 }
+
 
 #container {
   width: 80%;
   height: 100vh;
-  float: left;
+  float: left; // padding: 10px;
+  .step {
+    height: 100%;
+    .step1 {
+      .imgList {
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        list-style-type: none;
+        padding: 0;
+        li {
+          width: 200px;
+          height: 150px;
+          float: left;
+          border-width: 3px;
+          border-style: solid;
+          border-color: transparent;
+          margin: 10px;
+          opacity: .7;
+          overflow: hidden;
+          @mixin flex row;
+          &:hover {
+            opacity: .9;
+          }
+          &.selected {
+            opacity: 1;
+            border-color: $warning_color;
+          }
+          img {
+            /* width: calc(100% - 6px); */
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+          }
+        }
+      }
+      .upload {
+        text-align: center;
+        p {
+          @mixin orStyle;
+        }
+        input {
+          width: 0.1px;
+          height: 0.1px;
+          opacity: 0;
+          overflow: hidden;
+          position: absolute;
+          z-index: -1;
+        }
+        input + label {
+          font-size: 1.25em;
+          // font-weight: 700;
+          color: white;
+          background-color: $secondary_color;
+          display: inline-block;
+          cursor: pointer;
+          padding: 7px 17px;
+        }
+        /* input:focus + label, */
+        input + label:hover {
+          background: $secondary_color_hover;
+        }
+      }
+    }
+    .step2 {
+      height: 200px;
+      margin: 50px 0;
+      // padding: 20px;
+      .grade {
+        height: 100%;
+        @mixin flex row;
+        .gridWrap {
+          margin-bottom: 20px;
+          flex: 1;
+        }
+        p {
+          @mixin orStyle;
+        }
+        .gradeInput {
+          flex: 1;
+          width: 100%;
+          height: 100%;
+          @mixin flex column;
+          // border: 2px dashed #eee;
+          p {
+            color: $secondary_color;
+            font-size: 20px;
+            // text-decoration: underline;
+            border-bottom: 2px solid #ccc;
+            cursor: pointer;
+          }
+          .inputWrap {
+            margin-top: 20px;
+            @mixin flex column;
+            label {
+              font-size: 20px;
+              color: $secondary_color;
+              margin: 17px;
+              input {
+                @mixin input_reset 7px;
+                font-size: 15px;
+                color: $secondary_color_hover;
+                border-bottom: 2px solid #eee;
+                &.invalidata {
+                  border-bottom-color: $danger_color;
+                }
+              }
+            }
+            span {
+              color: $danger_color_hover;
+              align-self: flex-end;
+              padding-right: 15px;
+            }
+          }
+        }
+      }
+    }
+    .step3 {
+      height: 100px;
+      @mixin flex row;
+      button {
+        color: #222!important;
+        height: 50px!important;
+        font-size: 1.5em!important;
+        @mixin button_common 200px, $warning_color;
+        &:hover {
+          background: $warning_color_hover;
+        }
+        &.disabled {
+          @mixin button_disabled;
+        }
+      }
+    }
+  }
 }
 
-.step {
-  /* opacity: 1;
-  -webkit-transition: all .3s;
-  -moz-transition: all .3s;
-  transition: all .3s; */
+.gridWrap {
+  @mixin flex column;
+  span.label {
+    color: #bbb;
+    font-size: 13px;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    padding: 0;
+    text-align: center;
+    line-height: 18px;
+    font-weight: bold;
+  }
+  & > div {
+    margin-left: 20px;
+  }
   ul {
-
-    &.imgList {
-      list-style-type: none;
-      padding: 0;
-    }
+    flex: 1;
+    @mixin flex row;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
     li {
-      width: 200px;
-      height: 150px;
-      float: left;
-      border-width: 3px;
-      border-style: solid;
-      border-color: transparent;
-      margin: 10px;
-      opacity: .7;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      &:hover {
-        opacity: .9;
+      // border: 1px solid $secondary_color;
+      margin: 0;
+      width: 22px;
+      height: 22px;
+      padding: 2px;
+      cursor: pointer;
+      &:after {
+        width: 18px;
+        height: 18px;
+        display: block;
+        content: ' ';
+        background: #fff; // border: 1px solid $secondary_color;
+        background: $secondary_color;
+        opacity: .3;
       }
-
       &.selected {
-        opacity: 1;
-        border-color: #5cb85c;
-      }
-
-      img {
-        /* width: calc(100% - 6px); */
-        cursor: pointer;
-        width: 100%;
-        height: auto;
+        &:after {
+          background: $warning_color;
+          opacity: .7;
+        }
       }
     }
   }
@@ -108,55 +344,41 @@ html {
 
 
 /* 倒计时 */
+
 .countDown {
-  display: block;
+  @mixin flex row;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-  // font-family: ubuntu;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; // font-family: ubuntu;
   font-size: 70px;
+  color: $secondary_color_hover;
 }
 
 
-
 /* 拼图布局 */
+
 #puzzleBox {
   margin: 10px;
   width: calc(100% - 20px);
   height: calc(100% - 150px);
-
   .puzzleWrap {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    @mixin flex column;
     margin: 0 auto;
-
     ul {
       flex: 1;
       padding: 0;
       margin: 0;
       width: 100%;
       height: 100%;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
       list-style-type: none;
       background: #eee;
-
+      @mixin flex row;
       li {
         flex: 1;
         width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         border: 2px solid #fff;
-
+        @mixin flex row;
         img {
           width: 100%;
           height: 100%;
@@ -164,16 +386,13 @@ html {
       }
     }
   }
-
   &.more100 ul li {
     border-width: 1px
   }
-
   &.complete {
-
     .puzzleWrap {
-      box-shadow: 3px 5px 17px rgba(0, 0, 0, .3);
-      
+      // box-shadow: 3px 5px 17px rgba(0, 0, 0, .3);
+      box-shadow: rgba(0, 0, 0, .25) 0 14px 45px, rgba(0, 0, 0, .22) 0 10px 18px;
       ul li {
         border-width: 0;
         -webkit-transition: all 70ms;
@@ -186,13 +405,13 @@ html {
 
 
 /* 底部imgPiece */
+
 #imgPiece {
   position: fixed;
   bottom: 0;
   width: 80%;
   height: 150px;
   overflow: hidden;
-
   ul {
     height: 100%;
     list-style-type: none;
@@ -202,38 +421,30 @@ html {
     overflow-x: auto;
     overflow-y: hidden;
     display: flex;
-
     li {
+      @mixin flex row;
       height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       flex-wrap: nowrap;
-
       img {
         width: 70px;
         float: left;
         margin: 10px;
-        cursor: pointer;
+        cursor: move;
         border-radius: 2px;
         padding: 2px;
         box-shadow: 2px 1px 3px rgba(0, 0, 0, 0.3);
         -webkit-transition: all 50ms;
         -moz-transition: all 50ms;
         transition: all 50ms;
-
         &:hover {
           width: 150px
         }
-
         &.rotate90 {
           transform: rotate(90deg)
         }
-
         &.rotate180 {
           transform: rotateX(180deg)
         }
-
         &.rotate270 {
           transform: rotate(270deg)
         }
@@ -242,29 +453,32 @@ html {
   }
 }
 
-
 #records {
-  margin: 10px;
-  padding: 10px;
+  // margin: 10px;
+  // padding: 10px;
+  height: 100%;
   ul.current {
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     list-style-type: none;
-    margin: 0;
+    margin: 10px;
     padding: 0;
     &:before {
       content: 'PuzzleLite';
       font-weight: bold;
+      color: $base_color;
     }
     li {
       clear: both;
       &.name {
+        @mixin text_nowrap 100%;
         font-size: 14px;
         line-height: 2;
+        color: $info_color;
       }
       &.timing {
+        color: $secondary_color;
         font-size: 13px;
       }
-
       span {
         float: right;
         font-size: 14px;
@@ -274,20 +488,20 @@ html {
   ul.history {
     border-top: 2px dashed #eee;
     list-style-type: none;
-    padding: 0;
+    padding: 0 10px;
+    height: calc(100% - 40px);
+    overflow-y: auto;
+    margin: 0;
     li {
+      @mixin text_nowrap 100%;
       clear: both;
       height: 37px;
       line-height: 37px;
       font-size: 14px;
       color: #222;
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       border-bottom: 1px dashed #eee;
       cursor: pointer;
-
       &:hover {
         background: #eee;
         time {
@@ -301,7 +515,6 @@ html {
           display: none;
         }
       }
-      
       label {
         float: left;
         font-size: 12px;
@@ -310,12 +523,11 @@ html {
           content: '.'
         }
       }
-
       time {
         float: left;
         overflow: hidden;
         font-size: 12px;
-        margin: 0 5px; 
+        margin: 0 5px;
       }
       span {
         &.title {

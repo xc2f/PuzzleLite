@@ -11,19 +11,24 @@
 <body>
   <div id="root">
     <div class="left">
+      <div class="tip">
+        <span class="tip1">选择一张图片</span>
+        <span class="tip2">设置难度</span>
+        <span class="tip3">准备好了吗？</span>
+      </div>
       <div id="records">
         <ul class="current">
         </ul>
         <ul class="history"></ul>
       </div>
-      <div class="btn-group">
+      <div class="btn-group hide">
       </div>
     </div>
     <div id="container">
       <div class="step">
-        <div class="step1">
-          <div class="title">请选择一张图片</div>
-          <ul class="imgList clearfix">
+        <section class="step1">
+          <!-- <div class="title">选择一张图片</div> -->
+          <ul class="imgList">
             <li class="selected">
               <img data-tag="default-1" alt="Super-Mario-Odyssey">
             </li>
@@ -31,20 +36,115 @@
               <img data-tag="default-2" alt="Zelda">
             </li>
           </ul>
-          <p>或</p>
-          <input id="imgUpload" type="file" name="image" multiple accept="image/png, image/jpeg, image/gif" value="上传一张新图片">
-        </div>
-        <div class="step2">
-          <div class="title">请选择难度</div>
+          <div class="upload">
+            <p>或</p>
+            <input id="imgUpload" type="file" name="image" multiple accept="image/png, image/jpeg, image/gif">
+            <label for="imgUpload">上传新图片</label>
+          </div>
+        </section>
+        <section class="step2">
+          <!-- <div class="title">设置难度</div> -->
           <div class="grade">
-            <label for="divideRow">分割比例</label>
-            <div>
-              <input id="divideRow" type="number" step="1" name="divide-row" value="3" autofocus> 行 x
-              <input id="divideCol" type="number" step="1" name="divide-col" value="4"> 列
+            <div class="gridWrap">
+              <div class="">
+                <span class="hidden label" data-type="col" data-value="0">1</span>
+                <span class="hidden label" data-type="col" data-value="1">2</span>
+                <span class="hidden label" data-type="col" data-value="2">3</span>
+                <span class="hidden label" data-type="col" data-value="3">4</span>
+                <span class="hidden label" data-type="col" data-value="4">5</span>
+                <span class="hidden label" data-type="col" data-value="5">6</span>
+                <span class="hidden label" data-type="col" data-value="6">7</span>
+              </div>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="0">1</span>
+                <li data-p="00"></li>
+                <li data-p="01"></li>
+                <li data-p="02"></li>
+                <li data-p="03"></li>
+                <li data-p="04"></li>
+                <li data-p="05"></li>
+                <li data-p="06"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="1">2</span>
+                <li data-p="10"></li>
+                <li data-p="11"></li>
+                <li data-p="12"></li>
+                <li data-p="13"></li>
+                <li data-p="14"></li>
+                <li data-p="15"></li>
+                <li data-p="16"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="2">3</span>
+                <li data-p="20"></li>
+                <li data-p="21"></li>
+                <li data-p="22"></li>
+                <li data-p="23"></li>
+                <li data-p="24"></li>
+                <li data-p="25"></li>
+                <li data-p="26"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="3">4</span>
+                <li data-p="30"></li>
+                <li data-p="31"></li>
+                <li data-p="32"></li>
+                <li data-p="33"></li>
+                <li data-p="34"></li>
+                <li data-p="35"></li>
+                <li data-p="36"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="4">5</span>
+                <li data-p="40"></li>
+                <li data-p="41"></li>
+                <li data-p="42"></li>
+                <li data-p="43"></li>
+                <li data-p="44"></li>
+                <li data-p="45"></li>
+                <li data-p="46"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="5">6</span>
+                <li data-p="50"></li>
+                <li data-p="51"></li>
+                <li data-p="52"></li>
+                <li data-p="53"></li>
+                <li data-p="54"></li>
+                <li data-p="55"></li>
+                <li data-p="56"></li>
+              </ul>
+              <ul>
+                <span class="hidden label" data-type="row" data-value="6">7</span>
+                <li data-p="60"></li>
+                <li data-p="61"></li>
+                <li data-p="62"></li>
+                <li data-p="63"></li>
+                <li data-p="64"></li>
+                <li data-p="65"></li>
+                <li data-p="66"></li>
+              </ul>
+            </div>
+            <p>或</p>
+            <div class="gradeInput">
+              <p>手动输入</p>
+              <div class="inputWrap hide">
+                <label for="divideRow">行
+                  <input id="divideRow" type="number" step="1" min="1" name="divide-row" value="3" autofocus />
+                </label>
+                <label for="divideCol">列
+                  <input id="divideCol" type="number" step="1" min="1" name="divide-col" value="4" />
+                </label>
+                <span class="hidden">请填写大于0的整数</span>
+              </div>
             </div>
           </div>
+        </section>
+        <section class="step3">
+          <!-- <div class="title">准备好了吗？</div> -->
           <button id="startGame" type="button">开始</button>
-        </div>
+          </sectiondiv>
       </div>
       <div class="countDown hide">
         <span>3</span>...
