@@ -63,10 +63,10 @@ window.onload = () => {
   $('.imgList img[data-tag="default-1"]').src = defaultImg['default-1']
   $('.imgList img[data-tag="default-2"]').src = defaultImg['default-2']
 
-  initApp()
 
-  document.body.removeChild($('#loading'))
   $('#root').style.display = 'block'
+  initApp()
+  document.body.removeChild($('#loading'))
 }
 
 
