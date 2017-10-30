@@ -8,7 +8,6 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "./build/"),
         filename: 'bundle.js', // 打包输出的文件
-        publicPath: path.join(__dirname, "./build/"),
     },
     module: {
         rules: [
