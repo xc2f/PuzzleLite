@@ -68,6 +68,35 @@ $danger_color_hover: #c82333;
   cursor: not-allowed;
 }
 
+@define-mixin fonts $var {
+  font-family: $var, 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+
+@define-mixin upload {
+  input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+  }
+  input + label {
+    font-size: 1.25em;
+    // font-weight: 700;
+    color: white;
+    background-color: $secondary_color;
+    display: inline-block;
+    cursor: pointer;
+    padding: 7px 17px;
+  }
+  /* input:focus + label, */
+  input + label:hover {
+    background: $secondary_color_hover;
+  }
+}
+
 .clearfix:after {
   content: '.';
   display: block;
@@ -107,6 +136,8 @@ html {
   overflow: hidden;
   width: 100%;
   height: 100vh;
+  margin: 0;
+  padding: 0;
   /* padding: 10px; */
 }
 
@@ -130,6 +161,25 @@ html {
     }
     .tip1 {
       top: 10%;
+    }
+  }
+  .github {
+    // position: absolute;
+    // top: 10px;
+    // left: 97px;
+    display: block;
+    font-size: 17px;
+    color: $base_color;
+    text-decoration: none;
+    /* 空字符串不可去 */
+    @mixin fonts '';
+    display: flex;
+    align-items: center;
+    margin: 10px 10px 0 10px;
+    font-weight: bold;
+    svg {
+      margin-left: 5px;
+      fill: $base_color;
     }
   }
   #records {
@@ -169,12 +219,9 @@ html {
         list-style-type: none;
         padding: 0;
         li {
-          width: 200px;
-          height: 150px;
+          width: 150px;
+          height: 100px;
           float: left;
-          border-width: 3px;
-          border-style: solid;
-          border-color: transparent;
           margin: 10px;
           opacity: .7;
           overflow: hidden;
@@ -184,13 +231,24 @@ html {
           }
           &.selected {
             opacity: 1;
-            border-color: $warning_color;
+            img {
+              border-color: $warning_color;
+            }
           }
           img {
-            /* width: calc(100% - 6px); */
+            border-width: 7px;
+            border-style: solid;
+            border-radius: 2px;
+            border-color: transparent;
             cursor: pointer;
-            width: 100%;
+            width: calc(100% - 15px);
             height: auto;
+            max-height: 100%;
+            transition: all 250ms;
+            box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
+            &:hover {
+              box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 10px, rgba(0, 0, 0, 0.23) 0px 3px 7px;
+            } 
           }
         }
       }
@@ -199,27 +257,7 @@ html {
         p {
           @mixin orStyle;
         }
-        input {
-          width: 0.1px;
-          height: 0.1px;
-          opacity: 0;
-          overflow: hidden;
-          position: absolute;
-          z-index: -1;
-        }
-        input + label {
-          font-size: 1.25em;
-          // font-weight: 700;
-          color: white;
-          background-color: $secondary_color;
-          display: inline-block;
-          cursor: pointer;
-          padding: 7px 17px;
-        }
-        /* input:focus + label, */
-        input + label:hover {
-          background: $secondary_color_hover;
-        }
+        @mixin upload;
       }
     }
     .step2 {
@@ -432,10 +470,10 @@ html {
         cursor: move;
         border-radius: 2px;
         padding: 2px;
-        box-shadow: 2px 1px 3px rgba(0, 0, 0, 0.3);
-        -webkit-transition: all 50ms;
-        -moz-transition: all 50ms;
-        transition: all 50ms;
+        box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 7px, rgba(0, 0, 0, 0.23) 0px 3px 7px;
+        -webkit-transition: all 100ms;
+        -moz-transition: all 100ms;
+        transition: all 100ms;
         &:hover {
           width: 150px
         }
@@ -450,22 +488,34 @@ html {
         }
       }
     }
+    .complete {
+      width: 100%;
+      @mixin flex row;
+      @mixin upload;
+      font-size: 20px;
+      color: $secondary_color_hover;
+      label {
+        margin-left: 20px;
+      }
+    }
   }
 }
 
 #records {
   // margin: 10px;
   // padding: 10px;
-  height: 100%;
+  height: calc(100% - 30px);
   ul.current {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    @mixin fonts '';
     list-style-type: none;
     margin: 10px;
     padding: 0;
+    // padding: 10px;
+    // min-height: 20px;
     &:before {
-      content: 'PuzzleLite';
-      font-weight: bold;
-      color: $base_color;
+      // content: 'PuzzleLite';
+      // font-weight: bold;
+      // color: $base_color;
     }
     li {
       clear: both;
@@ -488,12 +538,13 @@ html {
   ul.history {
     border-top: 2px dashed #eee;
     list-style-type: none;
-    padding: 0 10px;
-    height: calc(100% - 40px);
+    padding: 0;
+    height: calc(100% - 10px);
     overflow-y: auto;
     margin: 0;
     li {
       @mixin text_nowrap 100%;
+      padding: 0 10px;
       clear: both;
       height: 37px;
       line-height: 37px;
@@ -518,7 +569,7 @@ html {
       label {
         float: left;
         font-size: 12px;
-        font-family: Consolas, 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        @mixin fonts Consolas;
         &:after {
           content: '.'
         }

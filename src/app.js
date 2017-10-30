@@ -64,6 +64,9 @@ window.onload = () => {
   $('.imgList img[data-tag="default-2"]').src = defaultImg['default-2']
 
   initApp()
+
+  document.body.removeChild($('#loading'))
+  $('#root').style.display = 'block'
 }
 
 
@@ -122,40 +125,53 @@ function handleInput(e, field) {
   // if(!value) {
   //   return
   // }
-  // 防止以0开头但有效的数字
-  value = String(Number(value))
-
-let test = value.match(/^[1-9]\d*/)
-  let is_validate = false
-  if(test && test[0] === value){
-    is_validate = true
-  }
 
   if(field === 'row'){
-    is_validate ? $('#divideRow').classList.remove('invalidata') : $('#divideRow').classList.add('invalidata')
     config.row =  Number(e.target.value)
   } else {
-    is_validate ? $('#divideCol').classList.remove('invalidata') : $('#divideCol').classList.add('invalidata')
     config.col =  Number(e.target.value)
   }
   // 绘制Grid
   renderSelectGrid()
 
-  isAllValidate() ? $('.inputWrap span').classList.add('hidden') : $('.inputWrap span').classList.remove('hidden')
+  checkValidateToStartGame()
 }
 
-function isAllValidate(){
-  let input_invalidate = $('.inputWrap .invalidata')
+function checkValidateToStartGame(){
+  // 防止以0开头但有效的数字
+  let row = String(config.row)
+  let col = String(config.col)
+
+  // 正则验证
+  let row_is_validate = checkValidate(row)
+  let col_is_validata = checkValidate(col)
+
+  row_is_validate ? $('#divideRow').classList.remove('invalidata') : $('#divideRow').classList.add('invalidata')
+  col_is_validata ? $('#divideCol').classList.remove('invalidata') : $('#divideCol').classList.add('invalidata')
+  
+
   let start_game_btn = $('#startGame')
-  if(input_invalidate){
+  if(row_is_validate && col_is_validata){
+    start_game_btn.disabled = false
+    start_game_btn.classList.remove('disabled')
+    $('.inputWrap span').classList.add('hidden')
+  } else {
     start_game_btn.disabled = true
     start_game_btn.classList.add('disabled')
-  } else {
-    start_game_btn.disabled = false
-    start_game_btn.classList.remove('disabled') 
+    $('.inputWrap span').classList.remove('hidden')
   }
-  return input_invalidate ? false : true
 
+}
+
+function checkValidate(value) {
+
+  // 开头是0也可以,会以第一位不是0的数字开始,传到这的数字,如果开头有0,已经被截取
+  let test = value.match(/^[1-9]\d*/)
+  let is_validate = false
+  if(test && test[0] === value){
+    is_validate = true
+  }
+  return is_validate
 }
 
 function initStepLayout() {
@@ -164,15 +180,9 @@ function initStepLayout() {
   $('.step1 .imgList').style.maxHeight = (w_h - 100 - 200 - 50 * 2 - 100 - 20) + 'px'
   
   let step1_h = $('.step .step1').offsetHeight
-  console.log(step1_h)
+  // console.log(step1_h)
   $('.tip .tip2').style.top = step1_h + 100 + 'px'
   $('.tip .tip3').style.top = step1_h + 335 + 'px'
-    // .tip2 {
-    //   top: 70%;
-    // }
-    // .tip3 {
-    //   bottom: 10%;
-    // }
 }
 
 function renderSelectGrid() {
@@ -200,8 +210,10 @@ function renderSelectGrid() {
 }
 
 function drawGrid(e, confirm) {
+  // 绘制grid
   let target = e.target
   if(target.tagName!== 'LI') {
+    // 如果点到了格子外部重置mouse over事件
     renderSelectGrid()
     return
   }
@@ -236,6 +248,8 @@ function drawGrid(e, confirm) {
     config.col = col
     $('#divideRow').value = row
     $('#divideCol').value = col
+    // 重新检查输入的合法值,刷新UI
+    checkValidateToStartGame()
   }
 }
 
@@ -280,9 +294,14 @@ function renderRecords(data) {
   }
 }
 
-function addImg(event) {
+/**
+ * 
+ * @param {nodeEvent} event - dom事件
+ * @param {func} callback - 拼图完成后从当前页新上传图片添加完后的事件回调
+ */
+function addImg(event, callback) {
   let files = Array.from(event.target.files)
-  files.map(file => {
+  Array.from(files).map(file => {
     let reader = new FileReader()
     reader.readAsDataURL(file)
     reader.onload = e => {
@@ -294,7 +313,7 @@ function addImg(event) {
       li.appendChild(img)
       $('.step .imgList').insertBefore(li, $('.step .imgList li')[0])
       // 选中新上传的图片
-      selectImg(img, 'add')  
+      selectImg(img, 'add', callback && callback)
     }
   })
   // 将input@file值置空，避免同一文件不触发事件.也无必要
@@ -306,7 +325,7 @@ function addImg(event) {
   }, 200);
 }
 
-function selectImg(event, type) {
+function selectImg(event, type, callback) {
   let target = type==='add' ? event : event.target
   if(target.tagName === 'IMG'){
     config.selected = target.getAttribute('data-tag')
@@ -315,6 +334,7 @@ function selectImg(event, type) {
       item.removeAttribute('class')
     })
     target.parentNode.setAttribute('class', 'selected')
+    callback && callback()
   }
 }
 
@@ -326,7 +346,9 @@ function reset(toHome) {
   $('#records .current').innerText = ''
   $('#imgPiece').classList.add('hide')
   $('#puzzleBox').classList.remove('complete')
-  $('#records').style.height = '100%'
+  let records_height = $('.left').offsetHeight - 30
+  $('#records').style.height = records_height + 'px'
+  $('#records .history').style.height = (records_height - 10) + 'px'
   // start_time = null
   img_pos_list =[]
   if(toHome){
@@ -375,7 +397,7 @@ function gameReady() {
   }, 1000)
 
   // 裁剪图片
-  spliceImg()
+  renderImg()
 }
 
 
@@ -394,7 +416,9 @@ function startGame() {
     btn_to_home.addEventListener('click', () => reset(true))
     btn_replay.addEventListener('click', () => reset(false))
     $('.left .btn-group').classList.remove('hide')
-    $('#records').style.height = 'auto'
+    let records_height = $('.left').offsetHeight - 180 - 30
+    $('#records').style.height = records_height + 'px'
+    $('#records .history').style.height = (records_height - 30) + 'px'
 
     // 左侧计时
     let li_title = createNode('li', config.filename, 'name')
@@ -432,15 +456,25 @@ function bindEvent(selector, type) {
 
 
 // 裁剪图片
-function spliceImg() {
-  let img, img_width, img_height, img_list=[]
-
+function renderImg() {
+  let img
   // 获取图片信息
   img = $(`.imgList img[data-tag='${config.selected}']`)
 
+  if(img.complete){
+    canvasToImg(img)
+  } else {
+    img.onload = () => {
+      canvasToImg(img)
+    }
+  }
+}
+
+function canvasToImg(img) {
+  let img_width, img_height, img_list=[]
   // 解决canvas toDataURL跨域,需启一个本地服务
   // 图片转base64后不需要
-  img.crossOrigin = "Anonymous"
+  // img.crossOrigin = "Anonymous"
   img_width = img.naturalWidth
   img_height = img.naturalHeight
 
@@ -456,7 +490,6 @@ function spliceImg() {
       // 必须是全参数
       ctx.drawImage(img, canvas.width * j, canvas.height * i, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height)
       let src = canvas.toDataURL('image/jpeg', 1)
-
       img_list.push({
         x: i,
         y: j,
@@ -669,7 +702,7 @@ class Drop {
     // 离开时，由enter事件，底部为img元素，当且仅当底部图片的状态非drop时
     if(target.tagName === 'IMG' && !target.getAttribute('data-status')){
       let parent_node = target.parentNode
-      console.log(parent_node.children)
+      // console.log(parent_node.children)
       parent_node.removeChild(parent_node.children[0])
     }
     // else if (target.tagName === 'LI'){
@@ -815,7 +848,6 @@ function handleSourceFromGrid(target){
 }
 
 function checkComplete() {
-  console.log(img_pos_list)
   for(let i=0, len=img_pos_list.length; i<len; i++){
     if(!img_pos_list[i].sign){
       return
@@ -840,6 +872,21 @@ function checkComplete() {
   storage.setItem('records', JSON.stringify(records))
 
   // 底部信息
+  let div = createNode('div', '恭喜,用时' + $('.current .timing span').innerText + '!', 'complete')
+  let input = document.createElement('input')
+  input.id = 'uploadImg'
+  input.type = 'file'
+  input.accept = 'image/png, image/jpeg, image/gif'
+  let label = createNode('label', '上传新图片', '', '', {
+    title: 'for',
+    value: 'uploadImg'
+  })
+  div.appendChild(input)
+  div.appendChild(label)
+  $('#imgPiece ul').appendChild(div)
 
+  input.addEventListener('change', e => {
+    addImg(e, reset)
+  })
 }
 
