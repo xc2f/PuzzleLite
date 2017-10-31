@@ -194,11 +194,11 @@ html {
       &.backHome {
         @mixin button_common 100%,
         $primary_color;
-        margin-bottom: 20px;
       }
       &.rePlay {
         @mixin button_common 100%,
         $info_color;
+        margin-bottom: 20px;
       }
     }
   }
@@ -450,6 +450,13 @@ html {
   width: 80%;
   height: 150px;
   overflow: hidden;
+  .rest {
+    position: absolute;
+    top: 7px;
+    right: 17px;
+    color: $secondary_color;
+    font-size: 13px;
+  }
   ul {
     height: 100%;
     list-style-type: none;

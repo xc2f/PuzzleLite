@@ -411,8 +411,8 @@ function startGame() {
     let btn_to_home = createNode('button', '回到主页', 'backHome')
     let btn_replay = createNode('button', '重新开始', 'rePlay')
     let btn_group = $('.left .btn-group')
-    btn_group.appendChild(btn_to_home)
     btn_group.appendChild(btn_replay)
+    btn_group.appendChild(btn_to_home)
     btn_to_home.addEventListener('click', () => reset(true))
     btn_replay.addEventListener('click', () => reset(false))
     $('.left .btn-group').classList.remove('hide')
@@ -439,6 +439,7 @@ function startGame() {
 
     // 开启底部图片
     $('#imgPiece').classList.remove('hide')
+    $('#imgPiece .rest').innerText = `${img_pos_list.length}/${img_pos_list.length}`
     
   }
   
@@ -848,11 +849,17 @@ function handleSourceFromGrid(target){
 }
 
 function checkComplete() {
+  // 底部剩余图片数
+  $('#imgPiece .rest').innerText = `${$('#imgPiece ul').children.length}/${img_pos_list.length}`
+
+  // 是否完成
   for(let i=0, len=img_pos_list.length; i<len; i++){
     if(!img_pos_list[i].sign){
       return
     }
   }
+  $('#imgPiece .rest').innerText = ''
+
   gameTiming('complete')
   $('#puzzleBox').classList.add('complete')
   Array.from($('#puzzleBox li img')).map(item => {
