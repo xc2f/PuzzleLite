@@ -46,7 +46,10 @@ yarn start && npm start
 
 ## BUG
 - 拖拽图片到格子时一定几率会在多个格子上渲染当前图片
+- FireFox浏览器下，拖拽缩略图过大
 
 ## 截图
 ![Home Page](./build/images/home.png)
+
+
 ![Gaming Page](./build/images/gaming.png)
