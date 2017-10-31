@@ -48,6 +48,10 @@ yarn start && npm start
 - 拖拽图片到格子时一定几率会在多个格子上渲染当前图片
 - FireFox浏览器下，拖拽缩略图过大
 
+## TODOLIST
+- 键盘支持
+- 拼图提示
+
 ## 截图
 ![Home Page](./build/images/home.png)
 
