@@ -208,7 +208,8 @@ html {
 #container {
   width: 80%;
   height: 100vh;
-  float: left; // padding: 10px;
+  float: left;
+  user-select: none;
   .step {
     height: 100%;
     .step1 {

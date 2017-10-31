@@ -682,7 +682,7 @@ class Drop {
     // e.stopPropagation()
     let target = e.target
     // 目标元素是li并且没有子元素，即为空
-    if(target.tagName === 'LI' && target.children.length === 0){
+    if(draging_img &&  target.tagName === 'LI' && target.children.length === 0){
       let img = document.createElement('img')
       img.src = draging_img.src
       img.style.cssText = 'opacity: .7;'
@@ -718,7 +718,12 @@ class Drop {
 
 
 // TODO 下面两个函数可优化
-
+// =========================================
+// 如何检测图片被正确填充
+// 1，图片分割后被打乱时，保存有自己正确位置的信息，存储在img_pos_list内的item上
+// 2，按img_pos_list内打乱的顺序渲染图片，为底部图片列表的顺序
+// 3，图片被放置在格子时，用自己在img_pos_list内保存的原始正确位置信息和格子的坐标做对比，相同则放置正确
+// =========================================
 function handleSourceFromPiece(target) {
   /**
    * target两种情况
