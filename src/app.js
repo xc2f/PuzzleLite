@@ -872,7 +872,7 @@ function checkComplete() {
   storage.setItem('records', JSON.stringify(records))
 
   // 底部信息
-  let div = createNode('div', '恭喜,用时' + $('.current .timing span').innerText + '!', 'complete')
+  let div = createNode('div', '恭喜，用时' + $('.current .timing span').innerText + '！', 'complete')
   let input = document.createElement('input')
   input.id = 'uploadImg'
   input.type = 'file'
