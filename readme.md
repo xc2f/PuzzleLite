@@ -51,6 +51,7 @@ yarn start && npm start
 ## TODOLIST
 - 键盘支持
 - 拼图提示
+- 移动端支持
 
 ## 截图
 ![Home Page](./build/images/home.png)
