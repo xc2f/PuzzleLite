@@ -11,7 +11,7 @@
 采用最新HTML5技术，图片用Canvas裁剪为设定数量，拖拽使用Drag&Drop API，游戏数据用sessionStorage在当前会话环境保存到本地
 
 ## 兼容性
-HTML5+ ES6+
+HTML5+ ES5+
 
 ## 在线体验
 [https://pysics.github.io/PuzzleLite/build/index.html](https://pysics.github.io/PuzzleLite/build/index.html)
