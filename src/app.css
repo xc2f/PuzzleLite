@@ -607,3 +607,21 @@ html {
     }
   }
 }
+
+
+@media screen and (max-width: 768px) {
+  #root .left *:not(.github), #container {
+    display: none;
+  }
+  .left {
+    border: none;
+  }
+  #root::before {
+    content: '移动端适配中:P';
+    color: $secondary_color_hover;
+    height: 100%;
+    width: 100%;
+    @mixin flex row;
+    position: absolute;
+  }
+}

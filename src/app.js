@@ -154,11 +154,18 @@ function checkValidateToStartGame(){
   if(row_is_validate && col_is_validata){
     start_game_btn.disabled = false
     start_game_btn.classList.remove('disabled')
-    $('.inputWrap span').classList.add('hidden')
+    let row_x_col = config.row * config.col
+    if(row_x_col <= 500){
+      $('.inputWrap .warning').innerHTML = '&nbsp;'
+    } else if(row_x_col <= 1000){
+      $('.inputWrap .warning').innerText = '分割过多会导致卡顿'
+    } else {
+      $('.inputWrap .warning').innerText = '分割太多会非常卡' 
+    }
   } else {
     start_game_btn.disabled = true
     start_game_btn.classList.add('disabled')
-    $('.inputWrap span').classList.remove('hidden')
+    $('.inputWrap .warning').innerText = '请填写大于0的整数'
   }
 
 }
