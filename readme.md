@@ -14,7 +14,7 @@
 HTML5+ ES5+
 
 ## 在线体验
-[https://pysics.github.io/PuzzleLite/build/index.html](https://pysics.github.io/PuzzleLite/build/index.html)
+[https://fine217.github.io/PuzzleLite/build/index.html](https://fine217.github.io/PuzzleLite/build/index.html)
 
 ## 本地体验
 
