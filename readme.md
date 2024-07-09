@@ -14,7 +14,7 @@
 HTML5+ ES5+
 
 ## 在线体验
-[https://7infen.github.io/PuzzleLite/](https://7infen.github.io/PuzzleLite/)
+[https://xc2f.github.io/PuzzleLite/](https://xc2f.github.io/PuzzleLite/)
 
 ## 本地体验
 
